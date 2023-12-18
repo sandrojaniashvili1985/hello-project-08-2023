@@ -1,0 +1,72 @@
+argo-workflows:
+  images:
+    pullPolicy: IfNotPresent
+
+  createAggregateRoles: true
+
+  nameOverride:
+  fullnameOverride:
+
+  workflow:
+    serviceAccount:
+      create: false # Specifies whether a service account should be created
+      annotations: {}
+      name: "argo-workflow" # Service account which is used to run workflows
+    rbac:
+      # Adds Role and RoleBinding for the above specified service account to be able to run workflows
+      # A Role and Rolebinding pair is also created for each namespace in controller.workflowNamespaces (see below)
+      create: true
+
+  controller:
+    name: workflow-controller
+    image:
+      registry: quay.io
+      repository: argoproj/workflow-controller
+    resources: {}
+    nodeSelector:
+      workload: system
+    priorityClassName: system-cluster-critical
+
+  # executor controls how the init and wait container should be customized
+  executor:
+    image:
+      registry: quay.io
+      repository: argoproj/argoexec
+    resources: {}
+
+  server:
+    enabled: true
+    name: server
+    image:
+      registry: quay.io
+      repository: argoproj/argocli
+      # Overrides the image tag whose default is the chart appVersion.
+    resources: {}
+    replicas: 1
+    nodeSelector:
+      workload: system
+    priorityClassName: system-cluster-critical
+    secure: false
+    ingress:
+      enabled: false
+
+  # Influences the creation of the ConfigMap for the workflow-controller itself.
+  useDefaultArtifactRepo: true
+  useStaticCredentials: true
+  artifactRepository:
+    # archiveLogs will archive the main container logs as an artifact
+    archiveLogs: false
+    s3:
+      # Note the `key` attribute is not the actual secret, it's the PATH to
+      # the contents in the associated secret, as defined by the `name` attribute.
+      accessKeySecret:
+        key: minio
+      secretKeySecret:
+        key: minio123
+      insecure: true
+      bucket: workflow-artifacts.minio.minio.svc.cluster.local
+      # endpoint:
+      # region:
+      # roleARN:
+      # useSDKCreds: true
+

@@ -1,0 +1,22 @@
+cloudfairy_module:
+  name: elasticsearch
+  displayName: Elasticsearch
+  type: component
+  interface:
+    - hackinfra/helm_elasticsearch
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/eks_bootstrap
+  properties:
+    - name: name
+      type: string
+      displayName: Release Name
+      defaultValue: elasticsearch
+    - name: chart_version
+      type: string
+      displayName: Chart Version
+      defaultValue: 19.5.0

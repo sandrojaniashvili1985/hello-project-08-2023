@@ -1,0 +1,232 @@
+argo-cd:
+  nameOverride: argocd
+
+  global:
+    image:
+      repository: quay.io/argoproj/argocd
+      imagePullPolicy: IfNotPresent
+
+  controller:
+    replicas: 1
+    args:
+      appResyncPeriod: '30'
+      repoServerTimeoutSeconds: '300'
+    enableStatefulSet: true
+    nodeSelector:
+      workload: system
+    resources:
+      limits: {}
+#        cpu: 2500m
+#        memory: 2.5Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+
+  dex:
+    nodeSelector:
+      workload: system
+    resources:
+      limits: {}
+#        cpu: 25m
+#        memory: 128Mi
+      requests:
+        cpu: 5m
+        memory: 32Mi
+
+  redis:
+    nodeSelector:
+      workload: system
+    resources:
+      limits: {}
+#        cpu: 25m
+#        memory: 64Mi
+      requests:
+        cpu: 10m
+        memory: 128Mi
+
+  server:
+    logLevel: debug
+    extraArgs:
+      - --insecure
+    nodeSelector:
+      workload: system
+    resources:
+      limits: {}
+#        cpu: 50m
+#        memory: 128Mi
+      requests:
+        cpu: 25m
+        memory: 64Mi
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - argocd.group07.hack22.tikalk.dev
+      tls:
+        - hosts:
+            - argocd.group07.hack22.tikalk.dev
+
+    ## ArgoCD config
+    ## reference https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
+    configEnabled: true
+    rbacConfig:
+      policy.default: role:admin
+      scopes: '[email,groups]'
+    config:
+      admin.enabled: 'true'
+      url: https://argocd.group07.hack22.tikalk.dev
+      timeout.reconciliation: 30s
+      repository.credentials: |
+        - url: git@gitlab.com:tikalk.com
+          sshPrivateKeySecret:
+            name: argocd-secret
+            key: ssh.private
+      dex.config: |
+        connectors:
+          - type: gitlab
+            id: gitlab
+            name: GitLab
+            config:
+              clientID: $oidc.client.id
+              clientSecret: $oidc.client.secret
+              redirectURI: https://argocd.group07.hack22.tikalk.dev/api/dex/callback
+      resource.customizations: |
+        apps/Deployment:
+          ignoreDifferences: |
+            jsonPointers:
+            - /metadata/managedFields
+            - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
+
+    additionalApplications:
+      - name: root
+        namespace: argocd
+        annotations:
+          argocd.argoproj.io/sync-wave: "100"
+        finalizers:
+          - resources-finalizer.argocd.argoproj.io
+        project: system
+        source:
+          repoURL: git@gitlab.com:tikalk.com/fuse/hackathon-2022/group07/group07.git
+          targetRevision: main
+          path: argocd/applications
+          directory:
+            recurse: true
+        destination:
+          name: in-cluster
+          namespace: argocd
+        syncPolicy:
+          syncOptions:
+            - Prune=true
+            - CreateNamespace=true
+            - ApplyOutOfSyncOnly=true
+            - PrunePropagationPolicy=foreground
+          automated:
+            selfHeal: true
+            prune: true
+          retry:
+            limit: 10
+            backoff:
+              maxDuration: '5m'
+              factor: 1
+              duration: '5s'
+
+    additionalProjects:
+      - name: default
+        namespace: argocd
+        description: Default project
+        sourceRepos:
+          - git@gitlab.com:tikalk.com/fuse/hackathon-2022/group07/group07.git
+        destinations:
+          - server: https://kubernetes.default.svc
+            namespace: default
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        orphanedResources:
+          warn: false
+
+      - name: system
+        namespace: argocd
+        description: System add-ons
+        sourceRepos:
+          - '*'
+        destinations:
+          - server: https://kubernetes.default.svc
+            namespace: '*'
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        orphanedResources:
+          warn: false
+
+      - name: cluster-addons
+        namespace: argocd
+        description: Cluster Addons
+        sourceRepos:
+          - '*'
+        destinations:
+          - server: https://kubernetes.default.svc
+            namespace: '*'
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        orphanedResources:
+          warn: false
+
+      - name: hackathon
+        namespace: argocd
+        description: Hackathon
+        sourceRepos:
+          - git@gitlab.com:tikalk.com/fuse/hackathon-2022/group07/group07.git
+        destinations:
+          - server: https://kubernetes.default.svc
+            namespace: '*'
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        orphanedResources:
+          warn: false
+
+  repoServer:
+    env:
+      - name: ARGOCD_GIT_MODULES_ENABLED
+        value: 'false'
+      - name: ARGOCD_EXEC_TIMEOUT
+        value: '3m'
+    nodeSelector:
+      workload: system
+    resources:
+      limits: {}
+#        cpu: 200m
+#        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 256Mi
+
+  configs:
+    secret:
+      createSecret: false
+    repositories:
+      hackathon-infra:
+        name: hackathon-infra
+        url: git@gitlab.com:tikalk.com/fuse/hackathon-2022/group07/group07.git
+
+  applicationSet:
+    repository: quay.io/argoproj/argocd-applicationset
+    args:
+      enableLeaderElection: false
+      policy: sync
+      debug: false
+      dryRun: false
+    replicaCount: 1
+    resources:
+      #    limits:
+      #      cpu: 100m
+      #      memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+    nodeSelector:
+      workload: system
+    priorityClassName: system-cluster-critical

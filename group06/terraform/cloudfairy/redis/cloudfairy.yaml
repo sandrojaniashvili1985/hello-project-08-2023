@@ -1,0 +1,22 @@
+cloudfairy_module:
+  name: redis
+  displayName: Redis
+  type: component
+  interface:
+    - hackinfra/helm_redis
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/eks_bootstrap
+  properties:
+    - name: name
+      type: string
+      displayName: Release Name
+      defaultValue: redis
+    - name: chart_version
+      type: string
+      displayName: Chart Version
+      defaultValue: 17.3.7

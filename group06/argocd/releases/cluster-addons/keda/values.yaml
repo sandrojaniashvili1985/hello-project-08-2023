@@ -1,0 +1,13 @@
+keda:
+  operator:
+    name: keda-operator
+  priorityClassName: system-cluster-critical
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1000Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  nodeSelector:
+    workload: system

@@ -1,0 +1,20 @@
+cloudfairy_module:
+  name: eks_bootstrap
+  displayName: EKS Bootstrap
+  type: component
+  vendor: hackinfra
+  internal: true
+  interface:
+    - k8s
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/gitlab_secrets
+    - hackinfra/eks
+  properties:
+    - name: name
+      type: string
+      displayName: Cluster name
+      defaultValue: group07

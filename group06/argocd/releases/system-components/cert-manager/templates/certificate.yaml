@@ -1,0 +1,31 @@
+{{/*apiVersion: cert-manager.io/v1*/}}
+{{/*kind: Certificate*/}}
+{{/*metadata:*/}}
+{{/*  name: default-tls*/}}
+{{/*  annotations:*/}}
+{{/*    argocd.argoproj.io/sync-wave: "101"*/}}
+{{/*spec:*/}}
+{{/*  secretName: default-tls*/}}
+{{/*  secretTemplate:*/}}
+{{/*  dnsNames:*/}}
+{{/*    - group07.hack22.tikalk.dev*/}}
+{{/*    - '*.group07.hack22.tikalk.dev'*/}}
+{{/*  issuerRef:*/}}
+{{/*    name: letsencrypt-staging*/}}
+{{/*    kind: ClusterIssuer*/}}
+{{/*---*/}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: default-tls
+  labels: {{ include "labels" . | nindent 4 }}
+spec:
+  secretName: default-tls
+  secretTemplate:
+    labels: {{ include "labels" . | nindent 6 }}
+  dnsNames:
+    - group07.hack22.tikalk.dev
+    - '*.group07.hack22.tikalk.dev'
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer

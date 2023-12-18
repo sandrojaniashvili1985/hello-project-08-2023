@@ -1,0 +1,23 @@
+cloudfairy_module:
+  name: vpc
+  displayName: VPC
+  type: component
+  interface:
+    - vpc
+  internal: true
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/gitlab_secrets
+  properties:
+    - name: name
+      type: string
+      displayName: VPC Name
+      defaultValue: group07
+    - name: cidr
+      type: string
+      displayName: VPC CIDR
+      defaultValue: 10.100.0.0/16

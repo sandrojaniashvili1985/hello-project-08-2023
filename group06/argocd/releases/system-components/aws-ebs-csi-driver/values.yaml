@@ -1,0 +1,14 @@
+aws-ebs-csi-driver:
+  controller:
+    create: false
+    nodeSelector:
+      workload: system
+
+  storageClasses:
+   - name: gp3
+     annotations:
+       storageclass.kubernetes.io/is-default-class: "true"
+     reclaimPolicy: Retain
+     parameters:
+       fsType: ext4
+       type: gp3

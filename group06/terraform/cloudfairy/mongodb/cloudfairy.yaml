@@ -1,0 +1,22 @@
+cloudfairy_module:
+  name: mongodb
+  displayName: MongoDB
+  type: component
+  interface:
+    - hackinfra/helm_mongodb
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/eks_bootstrap
+  properties:
+    - name: name
+      type: string
+      displayName: Release Name
+      defaultValue: mongodb
+    - name: chart_version
+      type: string
+      displayName: Chart Version
+      defaultValue: 13.4.3

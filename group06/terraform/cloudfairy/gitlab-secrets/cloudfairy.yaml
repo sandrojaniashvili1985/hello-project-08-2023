@@ -1,0 +1,16 @@
+cloudfairy_module:
+  name: gitlab_secrets
+  displayName: Gitlab Secrets
+  type: component
+  vendor: hackinfra
+  runtime: terraform
+  internal: true
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+  properties:
+    - name: name
+      type: string
+      displayName: Group Name
+      defaultValue: group07

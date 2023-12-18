@@ -1,0 +1,40 @@
+cloudfairy_module:
+  name: deployment
+  displayName: K8S Deployment
+  type: component
+  interface:
+    - hackinfra/k8s_workload
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/gitlab_secrets
+    - hackinfra/eks_bootstrap
+  properties:
+    - name: name
+      type: string
+      displayName: Release Name
+      defaultValue: nginx
+    - name: replicas
+      type: number
+      displayName: replicas
+      defaultValue: 1
+    - name: port
+      type: number
+      displayName: port
+      defaultValue: 80
+    - name: ingress
+      type: options
+      displayName: Enable ingress
+      defaultValue: true
+      options:
+        - label: True
+          value: true
+        - label: False
+          value: false
+    - name: domain
+      type: string
+      displayName: Domain
+      defaultValue: group07.hack22.tikalk.dev

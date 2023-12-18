@@ -1,0 +1,7 @@
+argo-events:
+  fullnameOverride: argo-events
+  controller:
+    name: controller-manager
+    replicas: 1
+    nodeSelector:
+      workload: system

@@ -1,0 +1,18 @@
+cloudfairy_module:
+  name: redis-k8s-connector
+  displayName: redis-k8s-connector
+  type: connector
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies: []
+  from:
+    - hackinfra/helm_redis
+  to:
+    - hackinfra/k8s_workload
+  properties:
+    - name: name
+      type: string
+      displayName: Env var name
+      defaultValue: REDIS_HOST

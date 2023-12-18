@@ -1,0 +1,41 @@
+cluster-autoscaler:
+  fullnameOverride: cluster-autoscaler
+  resources:
+    limits: {}
+#      cpu: 100m
+#      memory: 300Mi
+    requests:
+      cpu: 100m
+      memory: 300Mi
+  cloudProvider: aws
+  awsRegion: eu-west-1
+  priorityClassName: system-cluster-critical
+  autoDiscovery:
+    clusterName: group07
+    tags:
+      - k8s.io/cluster-autoscaler/enabled
+      - k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}
+  extraArgs:
+    logtostderr: true
+    stderrthreshold: info
+    v: 4
+    skip-nodes-with-local-storage: false
+    expander: priority
+    max-node-provision-time: 10m0s
+    scale-down-delay-after-add: 2m0s
+    scale-down-unneeded-time: 5m0s
+    skip-nodes-with-system-pods: false
+    max-empty-bulk-delete: 20
+    max-graceful-termination-sec: 21600
+    leader-elect: false
+
+  nodeSelector:
+    workload: system
+
+  serviceMonitor:
+    enabled: false
+    interval: 10s
+    namespace: kube-prometheus-stack
+    selector:
+      release: prometheus-operator
+    path: /metrics

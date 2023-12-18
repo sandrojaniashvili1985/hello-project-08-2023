@@ -1,0 +1,6 @@
+metrics-server:
+  image:
+    registry: public.ecr.aws
+  replicas: 1
+  nodeSelector:
+    workload: system

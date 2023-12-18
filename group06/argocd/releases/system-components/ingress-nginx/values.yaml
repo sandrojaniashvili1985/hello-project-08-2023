@@ -1,0 +1,113 @@
+ingress-nginx:
+  controller:
+    name: controller
+    extraArgs:
+      default-ssl-certificate: kube-system/default-tls
+    config:
+      proxy-real-ip-cidr: 10.100.0.0/16
+      proxy-buffer-size: '16k'
+      ssl-redirect: 'true'
+      force-ssl-redirect: 'true'
+      use-forwarded-headers: 'true'
+      log-format-escape-json: 'true'
+      log-format-upstream: >-
+        {
+        "timestamp": "$time_iso8601",
+        "request_id": "$req_id",
+        "remote_addr": "$remote_addr",
+        "client_addr": "$http_x_forwarded_for",
+        "method": "$request_method",
+        "status": $status,
+        "user_agent": "$http_user_agent",
+        "referer": "$http_referer",
+        "protocol": "$server_protocol",
+        "bytes_sent": "$bytes_sent",
+        "body_bytes_sent": "$body_bytes_sent",
+        "response_length": "$upstream_response_length",
+        "proxy_upstream_name": "$proxy_upstream_name",
+        "proxy_alternative_upstream_name": "$proxy_alternative_upstream_name",
+        "uri": "$uri",
+        "request_host": "$host",
+        "request_uri": "$request_uri",
+        "request": "$request",
+        "request_length": "$request_length",
+        "request_time": "$request_time",
+        "upstream_addr": "$upstream_addr",
+        "upstream_status": "$upstream_status",
+        "upstream_response_time": "$upstream_response_time",
+        "upstream_connect_time": "$upstream_connect_time",
+        "upstream_header_time": "$upstream_header_time"
+        }
+    containerName: controller
+    dnsPolicy: ClusterFirst
+    electionID: ingress-controller-leader
+    ingressClassResource:
+      name: nginx
+      enabled: true
+      default: true
+      controllerValue: k8s.io/ingress-nginx
+    kind: Deployment
+    nodeSelector:
+      workload: system
+    replicaCount: 3
+    minAvailable: 2
+    priorityClassName: system-cluster-critical
+    resources:
+      #  limits:
+      #    cpu: 100m
+      #    memory: 90Mi
+      requests:
+        cpu: 100m
+        memory: 90Mi
+    autoscaling:
+      enabled: false
+    keda:
+      enabled: false
+    service:
+      enabled: true
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+        service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      enableHttp: true
+      enableHttps: true
+      type: LoadBalancer
+      loadBalancerSourceRanges:
+        - 0.0.0.0/0
+      ports:
+        http: 80
+        https: 443
+      targetPorts:
+        http: http
+        https: https
+      external:
+        enabled: true
+      internal:
+        enabled: false
+    admissionWebhooks:
+      enabled: true
+      patch:
+        enabled: true
+        priorityClassName: system-cluster-critical
+        nodeSelector:
+          workload: system
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        namespace: kube-prometheus-stack
+        scrapeInterval: 10s
+  defaultBackend:
+    enabled: true
+
+  revisionHistoryLimit: 3
+
+  # Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
+  tcp: {}
+  #  8080: "default/example-tcp-svc:9000"
+
+  # A base64ed Diffie-Hellman parameter
+  # This can be generated with: openssl dhparam 4096 2> /dev/null | base64
+  # Ref: https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/ssl-dh-param
+  dhParam:

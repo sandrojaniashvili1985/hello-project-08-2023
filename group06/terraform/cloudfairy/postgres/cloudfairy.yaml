@@ -1,0 +1,22 @@
+cloudfairy_module:
+  name: postgres
+  displayName: Postgres
+  type: component
+  interface:
+    - hackinfra/helm_postgres
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/eks_bootstrap
+  properties:
+    - name: name
+      type: string
+      displayName: Release Name
+      defaultValue: postgres
+    - name: chart_version
+      type: string
+      displayName: Chart Version
+      defaultValue: 12.1.0

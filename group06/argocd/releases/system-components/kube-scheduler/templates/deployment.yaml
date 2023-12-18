@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kube-scheduler.fullname" . }}
+  labels: {{ include "kube-scheduler.labels" . | nindent 4 }}
+spec:
+  strategy:
+    type: {{ .Values.deploymentStrategy.type }}
+    {{- with .Values.deploymentStrategy.rollingUpdate }}
+    rollingUpdate: {{ toYaml . | nindent 6 }}
+    {{- end }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{ include "kube-scheduler.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      labels: {{ include "kube-scheduler.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kube-scheduler.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /usr/local/bin/kube-scheduler
+            - --address=0.0.0.0
+            - --leader-elect={{ .Values.leaderElect }}
+            {{- if .Values.leaderElect }}
+            - --leader-elect-resource-name={{ include "kube-scheduler.fullname" . }}
+            - --leader-elect-resource-namespace={{ .Release.Namespace }}
+            {{- end }}
+            - --scheduler-name={{ default (include "kube-scheduler.fullname" .) .Values.schedulerName }}
+            - --policy-configmap={{ include "kube-scheduler.fullname" . }}
+            - --policy-configmap-namespace={{ .Release.Namespace }}
+          {{- with .Values.extraArgs }}
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.extraEnv }}
+          env: {{ . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom: {{ . | nindent 12 }}
+          {{- end }}
+          {{- range $key, $value := .Values.ports }}
+          ports:
+            - name: {{ $key }}
+              containerPort: {{ $value.containerPort }}
+              protocol: {{ $value.protocol | default "TCP" }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.securityContext }}
+          securityContext: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.lifecycle }}
+          lifecycle: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.extraVolumeMounts }}
+          volumeMounts: {{ . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.extraVolumes }}
+      volumes: {{ . | nindent 8 }}
+      {{- end }}

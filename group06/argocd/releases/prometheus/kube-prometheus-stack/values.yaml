@@ -1,0 +1,146 @@
+kube-prometheus-stack:
+  defaultRules:
+    create: true
+
+  additionalPrometheusRulesMap: {}
+
+  alertmanager:
+    enabled: true
+
+  grafana:
+    enabled: true
+    image:
+      repository: 804444481013.dkr.ecr.eu-west-1.amazonaws.com/grafana
+      tag: 9.2.2
+      pullPolicy: IfNotPresent
+    initChownData:
+      image:
+        repository: public.ecr.aws/runecast/busybox
+        tag: 1.33.1
+        pullPolicy: IfNotPresent
+    defaultDashboardsEnabled: true
+    priorityClassName: system-cluster-critical
+    nodeSelector:
+      workload: system
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - grafana.group07.hack22.tikalk.dev
+      tls:
+        - hosts:
+            - grafana.group07.hack22.tikalk.dev
+    persistence:
+      enabled: true
+    additionalDataSources:
+      - name: loki
+        editable: false
+        orgId: 1
+        type: loki
+        url: http://loki.loki:3100
+    envFromSecret: grafana-gitlab
+    grafana.ini:
+      unified_alerting:
+        enabled: true
+        min_interval: 10s
+      alerting:
+        enabled: false
+      auth:
+        disable_login_form: true
+      auth.basic:
+        enabled: false
+      users:
+        auto_assign_org_role: Admin
+      server:
+        domain: '{{ .Values.ingress.enabled | ternary (index .Values.ingress.hosts 0) "localhost" }}'
+        root_url: '{{ .Values.ingress.enabled | ternary "https://%(domain)s/" "%(protocol)s://%(domain)s:%(http_port)s/" }}'
+      auth.gitlab:
+        enabled: true
+        allow_sign_up: true
+        client_id: "${GITLAB_CLIENT_ID}"
+        client_secret: "${GITLAB_CLIENT_SECRET}"
+        scopes: read_api
+        auth_url: https://gitlab.com/oauth/authorize
+        token_url: https://gitlab.com/oauth/token
+        api_url: https://gitlab.com/api/v4
+
+  kubeApiServer:
+    enabled: true
+
+  kubelet:
+    enabled: true
+
+  kubeControllerManager:
+    enabled: false
+
+  coreDns:
+    enabled: true
+
+  kubeDns:
+    enabled: false
+
+  kubeEtcd:
+    enabled: false
+
+  kubeScheduler:
+    enabled: false
+
+  kubeProxy:
+    enabled: false
+
+  kubeStateMetrics:
+    enabled: true
+    serviceMonitor:
+      namespaceOverride: kube-system
+
+  kube-state-metrics:
+    namespaceOverride: kube-system
+    nodeSelector:
+      workload: system
+    priorityClassName: system-cluster-critical
+    metricLabelsAllowlist:
+      - pods=[*]
+      - nodes=[*]
+      - deployments=[*]
+
+  nodeExporter:
+    enabled: true
+
+  prometheus-node-exporter:
+    priorityClassName: system-node-critical
+
+  prometheusOperator:
+    enabled: true
+    priorityClassName: system-cluster-critical
+    tls:
+      enabled: false
+    admissionWebhooks:
+      enabled: false
+    nodeSelector:
+      workload: system
+
+  prometheus:
+    enabled: true
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - prometheus.group07.hack22.tikalk.dev
+      tls:
+        - hosts:
+            - prometheus.group07.hack22.tikalk.dev
+
+    prometheusSpec:
+      scrapeInterval: ""
+      scrapeTimeout: ""
+      evaluationInterval: ""
+      enableAdminAPI: true
+      nodeSelector:
+        workload: system
+      priorityClassName: system-cluster-critical
+      ruleSelectorNilUsesHelmValues: false
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false

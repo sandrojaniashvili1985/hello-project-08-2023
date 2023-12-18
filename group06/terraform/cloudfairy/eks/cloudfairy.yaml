@@ -1,0 +1,28 @@
+cloudfairy_module:
+  name: eks
+  displayName: EKS
+  type: component
+  interface:
+    - eks
+  internal: true
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies:
+    - cloud_provider
+    - hackinfra/gitlab_secrets
+    - hackinfra/vpc
+  properties:
+    - name: name
+      type: string
+      displayName: VPC Name
+      defaultValue: group07
+    - name: k8s_version
+      type: string
+      displayName: Kubernetes Version
+      defaultValue: 1.23
+    - name: domain
+      type: string
+      displayName: Domain name to use
+      defaultValue: hack22.tikalk.dev

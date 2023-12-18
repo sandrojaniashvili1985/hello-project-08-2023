@@ -1,0 +1,126 @@
+# Default values for workload.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ''
+fullnameOverride: ''
+
+replicaCount: 1
+leaderElect: false
+
+schedulerName: ""
+
+policyConfig:
+  - name: MostRequestedPriority
+    weight: 1
+  - name: ServiceSpreadingPriority
+    weight: 1
+  - name: EqualPriority
+    weight: 1
+  - name: ImageLocalityPriority
+    weight: 1
+  - name: SelectorSpreadPriority
+    weight: 1
+  - name: InterPodAffinityPriority
+    weight: 1
+  - name: LeastRequestedPriority
+    weight: 1
+  - name: BalancedResourceAllocation
+    weight: 1
+  - name: NodePreferAvoidPodsPriority
+    weight: 1
+  - name: NodeAffinityPriority
+    weight: 1
+  - name: TaintTolerationPriority
+    weight: 1
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate: {}
+  #  maxSurge: 10
+  #  maxUnavailable: 3
+
+image:
+  repository: public.ecr.aws/eks-distro/kubernetes/kube-scheduler
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: v1.18.20-eks-1-18-12
+
+imagePullSecrets: []
+
+serviceAccount:
+  name: ""
+
+commonLabels: {}
+#  app.kubernetes.io/component: ''
+#  app.kubernetes.io/part-of: ''
+
+podAnnotations: {}
+
+podSecurityContext: {}
+#  fsGroup: 2000
+
+securityContext: {}
+#  capabilities:
+#    drop:
+#    - ALL
+#  readOnlyRootFilesystem: true
+#  runAsNonRoot: true
+#  runAsUser: 1000
+
+ports: {}
+#  http:
+#    containerPort: 80
+#    protocol: TCP
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 10251
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 10251
+
+resources:
+#  limits:
+#    cpu: 100m
+#    memory: 128Mi
+  requests:
+    cpu: 100m
+#    memory: 128Mi
+
+extraArgs: []
+
+terminationGracePeriodSeconds: 30
+
+extraEnv: []
+
+extraEnvFrom: []
+
+extraVolumes: []
+
+extraVolumeMounts: []
+
+nodeSelector:
+  workload: system
+
+tolerations: []
+
+affinity: {}
+
+lifecycle: {}
+#  postStart:
+#    exec:
+#      command: []
+#  preStop:
+#    exec:
+#      command: []
+
+startupProbe: {}
+#  failureThreshold: 3
+#  timeoutSeconds: 3
+#  httpGet:
+#    path:
+#    port:

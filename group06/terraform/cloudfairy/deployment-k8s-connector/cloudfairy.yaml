@@ -1,0 +1,18 @@
+cloudfairy_module:
+  name: deployment-k8s-connector
+  displayName: deployment-k8s-connector
+  type: connector
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies: []
+  from:
+    - hackinfra/k8s_workload
+  to:
+    - hackinfra/k8s_workload
+  properties:
+    - name: name
+      type: string
+      displayName: Env var name
+      defaultValue: HOST

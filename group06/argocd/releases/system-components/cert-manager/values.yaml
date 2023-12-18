@@ -1,0 +1,39 @@
+cert-manager:
+
+  global:
+    priorityClassName: system-cluster-critical
+    logLevel: 2
+
+  installCRDs: true
+  replicaCount: 1
+  extraArgs: []
+  nodeSelector:
+    workload: system
+
+  ingressShim:
+    defaultIssuerName: letsencrypt-staging
+    defaultIssuerKind: ClusterIssuer
+
+  prometheus:
+    enabled: false
+    servicemonitor:
+      enabled: false
+
+  webhook:
+    replicaCount: 1
+    timeoutSeconds: 10
+    extraArgs: []
+    resources: {}
+    nodeSelector:
+      workload: system
+
+  cainjector:
+    enabled: true
+    replicaCount: 1
+    extraArgs: []
+    resources: {}
+    nodeSelector:
+      workload: system
+
+  startupapicheck:
+    enabled: false

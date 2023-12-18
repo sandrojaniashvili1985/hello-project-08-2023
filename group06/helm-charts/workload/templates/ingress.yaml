@@ -1,0 +1,33 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "workload.fullname" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels: {{ include "workload.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  {{- with .Values.ingress.tls }}
+  tls: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+  {{- range $host, $path := .Values.ingress.hosts }}
+    {{- if gt (len $path) 0 }}
+    - host: {{ tpl $host $ | quote }}
+      http:
+        paths:
+          {{- range $path }}
+          - path: {{ .path }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ default $fullName .service.name }}
+                port:
+                  name: {{ .service.port.name }}
+          {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,41 @@
+external-dns:
+  image:
+    repository: k8s.gcr.io/external-dns/external-dns
+    # Overrides the image tag whose default is v{{ .Chart.AppVersion }}
+    tag: ""
+    pullPolicy: IfNotPresent
+
+  nameOverride: ""
+  fullnameOverride: external-dns
+
+  priorityClassName: system-cluster-critical
+
+  env: []
+
+  service:
+    port: 7979
+    annotations: {}
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  nodeSelector:
+    workload: system
+  tolerations: []
+  affinity: {}
+  logLevel: info
+  logFormat: text
+  interval: 30s
+  triggerLoopOnEvent: false
+  sources:
+    - service
+    - ingress
+  policy: sync
+  registry: txt
+  txtOwnerId: ""
+  txtPrefix: ""
+  domainFilters:
+    - group07.hack22.tikalk.dev
+  provider: aws
+  extraArgs: []

@@ -1,0 +1,168 @@
+{
+  "project": {
+    "libraries": {
+      "hackinfra": "/Users/hagzag/projects/fuse2022-2/group07/terraform/cloudfairy",
+      "cloudfairy": "/Users/hagzag/.cloudfairy/libraries/cloudfairy"
+    },
+    "projectName": "group07",
+    "globalConfig": {
+      "remote_bucket": "tikal-hackathon2022-group07-tf-state"
+    },
+    "components": [
+      {
+        "type": "component",
+        "properties": [
+          {
+            "name": "name",
+            "defaultValue": "nginx",
+            "value": "backstage"
+          },
+          {
+            "name": "replicas",
+            "defaultValue": 1,
+            "value": "1"
+          },
+          {
+            "name": "port",
+            "defaultValue": 80,
+            "value": "80"
+          },
+          {
+            "name": "ingress",
+            "defaultValue": true,
+            "value": "true"
+          },
+          {
+            "name": "domain",
+            "defaultValue": "group07.hack22.tikalk.dev",
+            "value": "group07.hack22.tikalk.dev"
+          }
+        ],
+        "localName": "backstage",
+        "uuid": "d82c654db8b9dabb",
+        "qName": "hackinfra/deployment",
+        "annotations": {}
+      },
+      {
+        "type": "component",
+        "properties": [
+          {
+            "name": "name",
+            "defaultValue": "postgres",
+            "value": "database"
+          },
+          {
+            "name": "chart_version",
+            "defaultValue": "12.1.0",
+            "value": "12.1.0"
+          }
+        ],
+        "localName": "database",
+        "uuid": "0da881dc8d5b45d5",
+        "qName": "hackinfra/postgres",
+        "annotations": {}
+      },
+      {
+        "type": "component",
+        "properties": [
+          {
+            "name": "name",
+            "defaultValue": "redis",
+            "value": "redis"
+          },
+          {
+            "name": "chart_version",
+            "defaultValue": "17.3.7",
+            "value": "17.3.7"
+          }
+        ],
+        "localName": "redis",
+        "uuid": "9bc8d45c81ea8d8a",
+        "qName": "hackinfra/redis",
+        "annotations": {}
+      },
+      {
+        "type": "cloud-provider",
+        "properties": [
+          {
+            "name": "account_id",
+            "defaultValue": "",
+            "value": "804444481013"
+          },
+          {
+            "name": "awsAccessKey",
+            "defaultValue": "",
+            "value": "AKIA3WTFAUX2WPOXJIJS"
+          },
+          {
+            "name": "awsSecretKey",
+            "defaultValue": "",
+            "value": "efMleOioVCQAGElxsc3h3LJS5aZ06YWTZq6qk6WK"
+          },
+          {
+            "name": "region",
+            "defaultValue": "eu-west-1",
+            "value": "eu-west-1"
+          },
+          {
+            "name": "remote_bucket",
+            "defaultValue": "",
+            "value": "tikal-hackathon2022-group07-tf-state"
+          }
+        ],
+        "localName": "cloud-provider",
+        "uuid": "459d6d9e2a9a82b7",
+        "qName": "cloudfairy/cloud-provider-aws",
+        "annotations": {
+          "cloudfairy.dev/cloud-provider-type": "aws"
+        }
+      },
+      {
+        "type": "component",
+        "properties": [
+          {
+            "name": "name",
+            "defaultValue": "mongodb",
+            "value": "mongodb"
+          },
+          {
+            "name": "chart_version",
+            "defaultValue": "13.4.3",
+            "value": "13.4.3"
+          }
+        ],
+        "localName": "mongodb",
+        "uuid": "0d9e2d7e2734687e",
+        "qName": "hackinfra/mongodb",
+        "annotations": {}
+      }
+    ],
+    "connectors": [],
+    "metadata": {
+      "canvas": {
+        "x": 0,
+        "y": 0
+      },
+      "designer": {},
+      "components": {
+        "d82c654db8b9dabb": {
+          "x": 0,
+          "y": 0
+        },
+        "0da881dc8d5b45d5": {
+          "x": 0,
+          "y": 0
+        },
+        "9bc8d45c81ea8d8a": {
+          "x": 0,
+          "y": 0
+        },
+        "459d6d9e2a9a82b7": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "connections": []
+    }
+  }
+}

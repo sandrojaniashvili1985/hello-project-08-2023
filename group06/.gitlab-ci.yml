@@ -1,0 +1,157 @@
+stages:
+  - build
+  - test
+  - deploy
+
+cache:
+  key: npm
+  policy: pull-push
+  paths:
+    - .npm/
+
+variables:
+  RULES_CHANGES_PATH: "**/*"
+
+.base-rules:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - $RULES_CHANGES_PATH
+    - when: manual
+      allow_failure: true
+
+.cloudfairy:
+  extends: .base-rules
+  variables:
+    RULES_CHANGES_PATH: "terraform/cloudfairy.project.json"
+
+.build:
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - cd $BUILD_HOME
+    - docker pull $CI_REGISTRY_IMAGE/$IMAGE_NAME:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/$IMAGE_NAME:latest --tag $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA -f Dockerfile.$IMAGE_NAME .
+    - docker push $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE/$IMAGE_NAME:latest
+    - docker push $CI_REGISTRY_IMAGE/$IMAGE_NAME:latest
+
+fairy-build:
+  stage: build
+  extends: .cloudfairy
+  image: public.ecr.aws/docker/library/node:alpine
+  before_script:
+    - apk add git
+    - npm i -g @cloudfairy/cli
+    - fairy init
+  script:
+    - cd terraform
+    - fairy lib add hackinfra $(pwd)/cloudfairy
+    - fairy lib set-default hackinfra
+    - fairy p ls
+    - fairy build ./out
+    - tar -zcvf cf-out.tar.gz ./out
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - terraform/cf-out.tar.gz
+  rules:
+    - changes: 
+        - ./terraform
+
+backstage-build-node:
+  stage: build
+  image: node:16-alpine
+  services:
+    - docker:19.03.12-dind
+  script:
+    - npm i -g lerna
+    - cd backstage
+    - lerna bootstrap
+    - yarn --cache .npm
+    - yarn ci
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - backstage/packages/backend/dist/bundle.tar.gz
+      - backstage/packages/app/dist/skeleton.tar.gz
+      - backstage/packages/backend/package.json
+      - backstage/packages/app/package.json
+      - backstage/yarn.lock
+      - backstage/package.json
+      - backstage/app-config*.yaml
+  rules:
+    - changes: 
+        - ./backstage
+      
+backstage-build-docker:
+  stage: build
+  image: docker:19.03.12
+  dependencies:
+    - backstage-build-node
+  needs:
+    - backstage-build-node
+  services:
+    - docker:19.03.12-dind
+  script:
+    - cd backstage/packages/backend
+    - docker build ../.. -f Dockerfile --tag $CI_REGISTRY_IMAGE/backstage:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/backstage:$CI_COMMIT_SHA
+    - docker build ../.. -f Dockerfile --tag $CI_REGISTRY_IMAGE/backstage:latest
+    - docker push $CI_REGISTRY_IMAGE/backstage:latest
+  rules:
+    - changes: 
+        - ./backstage
+
+mem-checker-build-docker:
+  stage: build
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  script:
+    - cd api
+    - docker build --tag $CI_REGISTRY_IMAGE/mmc-api:$CI_COMMIT_SHA .
+    - docker build --tag $CI_REGISTRY_IMAGE/mmc-api:latest .
+    - docker push $CI_REGISTRY_IMAGE/mmc-api:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE/mmc-api:latest
+  rules:
+    - changes: 
+        - ./api
+        - .gitlab-ci.yml
+
+deploy:
+  stage: deploy
+  extends: .cloudfairy
+  image:
+    name: public.ecr.aws/hashicorp/terraform:1.3.4
+    entrypoint: [""]
+  dependencies:
+    - fairy-build
+  needs:
+    - fairy-build
+    # - controller-test
+    # - worker-test
+  before_script:
+    - wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.40.2/terragrunt_linux_amd64
+    - chmod +x terragrunt_linux_amd64
+    - mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+  script:
+    - terraform --version
+    - terragrunt --version
+    - cd terraform
+    - tar -zxvf cf-out.tar.gz
+    - cd out
+    - terragrunt run-all apply --terragrunt-non-interactive
+  rules:
+    - changes: 
+        - ./terraform

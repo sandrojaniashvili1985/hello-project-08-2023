@@ -1,0 +1,146 @@
+# Default values for workload.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ''
+fullnameOverride: ''
+
+replicaCount: 1
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate: {}
+  #  maxSurge: 10
+  #  maxUnavailable: 3
+
+image:
+  registry: registry.gitlab.com/tikalk.com/fuse/hackathon-2022/group07/group07/
+  repository: node-app
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+
+imagePullSecrets: []
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ''
+
+commonLabels: {}
+#  app.kubernetes.io/component: ''
+#  app.kubernetes.io/part-of: ''
+
+podAnnotations: {}
+
+podSecurityContext: {}
+#  fsGroup: 2000
+
+securityContext: {}
+#  capabilities:
+#    drop:
+#    - ALL
+#  readOnlyRootFilesystem: true
+#  runAsNonRoot: true
+#  runAsUser: 1000
+
+ports: {}
+#  http:
+#    containerPort: 80
+#    protocol: TCP
+
+service:
+  enabled: false
+  annotations: {}
+  type: ClusterIP
+  ports: {}
+  #  http:
+  #    port: 80
+  #    targetPort: http
+  #    protocol: TCP
+
+ingress:
+  enabled: false
+  ingressClassName: nginx
+  annotations: {}
+  hosts: {}
+  #  example.com:
+  #    - path: /
+  #      service:
+  #        name: ""
+  #        port:
+  #          name: http
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+livenessProbe: {}
+#  httpGet:
+#    path: /
+#    port: http
+
+readinessProbe: {}
+#  httpGet:
+#    path: /
+#    port: http
+
+resources: {}
+#  limits:
+#    cpu: 100m
+#    memory: 128Mi
+#  requests:
+#    cpu: 100m
+#    memory: 128Mi
+
+command: []
+
+args: []
+
+terminationGracePeriodSeconds: 30
+
+extraEnv: []
+#  - name: foo
+#    value: bar
+#  - name: bar
+#    valueFrom:
+#      secretKeyRef:
+#        name: my-secret
+#        key: ham
+
+extraEnvFrom: []
+#  - configMapRef:
+#      name: foobar
+
+extraVolumes: []
+
+extraVolumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+
+topologySpreadConstraints: []
+
+schedulerName: ""
+
+affinity: {}
+
+lifecycle: {}
+#  postStart:
+#    exec:
+#      command: []
+#  preStop:
+#    exec:
+#      command: []
+
+startupProbe: {}
+#  failureThreshold: 3
+#  timeoutSeconds: 3
+#  httpGet:
+#    path:
+#    port:

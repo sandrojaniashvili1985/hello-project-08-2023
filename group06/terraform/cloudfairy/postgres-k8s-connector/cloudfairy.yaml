@@ -1,0 +1,26 @@
+cloudfairy_module:
+  name: postgres-k8s-connector
+  displayName: postgres-k8s-connector
+  type: connector
+  vendor: hackinfra
+  runtime: terraform
+  entry:
+    aws: main.tf
+  dependencies: []
+  from:
+    - hackinfra/helm_postgres
+  to:
+    - hackinfra/k8s_workload
+  properties:
+    - name: host_var_name
+      type: string
+      displayName: Host Env var name
+      defaultValue: PSQL_HOST
+    - name: pass_var_name
+      type: string
+      displayName: Password Env var name
+      defaultValue: PSQL_PASS
+    - name: user_var_name
+      type: string
+      displayName: Password Env var name
+      defaultValue: PSQL_USER
